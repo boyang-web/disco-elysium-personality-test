@@ -5,7 +5,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>极乐迪斯科 · 24人格声音图鉴</title>
 <style>
-  @import url('https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;600;700;900&family=Playfair+Display:wght@400;700;900&display=swap');
+  /* System font stack — avoids Google Fonts loading issues in China */
+  /* @import url('https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;600;700;900&family=Playfair+Display:wght@400;700;900&display=swap'); */
 
   :root {
     --intellect: #4a90c4;
@@ -32,7 +33,7 @@
   body {
     background: var(--bg);
     color: var(--text);
-    font-family: 'Noto Serif SC', 'Playfair Display', serif;
+    font-family: 'Noto Serif SC', 'Source Han Serif SC', 'STSong', 'SimSun', 'Songti SC', serif;
     min-height: 100vh;
     overflow-x: hidden;
   }
@@ -303,7 +304,7 @@
     font-size: 56px;
     font-weight: 900;
     opacity: 0.035;
-    font-family: 'Playfair Display', serif;
+    font-family: 'Georgia', 'Times New Roman', serif;
     line-height: 1;
     pointer-events: none;
   }
