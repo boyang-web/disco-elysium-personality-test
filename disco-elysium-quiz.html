@@ -1,0 +1,739 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>极乐迪斯科 · 你脑海中最吵的声音是哪个？</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;600;700;900&family=Playfair+Display:wght@400;700;900&display=swap');
+
+  :root {
+    --intellect: #4a90c4; --intellect-glow: rgba(74,144,196,0.25);
+    --psyche: #8b5fc0;    --psyche-glow: rgba(139,95,192,0.25);
+    --physique: #c94a3a;  --physique-glow: rgba(201,74,58,0.25);
+    --motorics: #c9a84c;  --motorics-glow: rgba(201,168,76,0.25);
+    --bg: #1a1410; --card-bg: rgba(28,22,17,0.94);
+    --text: #d4c8b8; --text-dim: #8a7e6e; --border: #3a3028;
+  }
+
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body {
+    background: var(--bg); color: var(--text);
+    font-family: 'Noto Serif SC', serif;
+    min-height: 100vh; overflow-x: hidden;
+  }
+
+  /* Background */
+  .bg-noise { position:fixed; top:0; left:0; width:100%; height:100%;
+    background: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+    pointer-events:none; z-index:0; }
+  .bg-art { position:fixed; top:0; left:0; width:100%; height:100%;
+    background:
+      radial-gradient(ellipse at 30% 60%, rgba(180,120,40,0.10) 0%, transparent 60%),
+      radial-gradient(ellipse at 75% 25%, rgba(100,140,180,0.08) 0%, transparent 55%),
+      radial-gradient(ellipse at 50% 50%, transparent 35%, rgba(10,6,2,0.75) 100%),
+      linear-gradient(to bottom, rgba(30,28,26,0) 0%, rgba(40,35,30,0.3) 30%, rgba(30,22,18,0.6) 70%, rgba(18,12,8,0.85) 100%);
+    pointer-events:none; z-index:0; }
+  .paint-blob { position:fixed; pointer-events:none; z-index:0; opacity:0.04; filter:blur(60px); border-radius:45% 55% 50% 50%; }
+  .paint-blob.b1 { width:600px; height:300px; background:var(--intellect); top:-100px; left:-200px; transform:rotate(-12deg); }
+  .paint-blob.b2 { width:500px; height:260px; background:var(--psyche); bottom:-80px; right:-150px; transform:rotate(18deg); }
+  .paint-blob.b3 { width:400px; height:220px; background:var(--physique); top:40%; left:-100px; transform:rotate(-25deg); }
+  .paint-blob.b4 { width:380px; height:350px; background:var(--motorics); top:10%; right:-120px; transform:rotate(40deg); }
+
+  .container { position:relative; z-index:1; max-width:800px; margin:0 auto; padding:30px 20px; }
+
+  /* Screens */
+  .screen { display:none; }
+  .screen.active { display:block; animation: fadeUp 0.5s ease; }
+  @keyframes fadeUp { from { opacity:0; transform:translateY(20px); } to { opacity:1; transform:translateY(0); } }
+
+  /* ── Start Screen ── */
+  .start-content { text-align:center; padding:60px 20px; }
+  .start-content .subtitle { font-size:13px; letter-spacing:6px; color:var(--text-dim); margin-bottom:12px; }
+  .start-content h1 { font-size:clamp(32px,5vw,56px); font-weight:900;
+    background: linear-gradient(180deg, #efe4d0 0%, #b8a58a 40%, #6a5c48 100%);
+    -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text;
+    line-height:1.15; letter-spacing:3px; margin-bottom:16px; }
+  .start-content .tagline { font-style:italic; color:var(--text-dim); font-size:15px; line-height:1.9; margin-bottom:40px; }
+  .start-content .info-cards { display:flex; gap:14px; justify-content:center; flex-wrap:wrap; margin-bottom:44px; }
+  .info-card { background:var(--card-bg); border:1px solid var(--border); padding:18px 24px; text-align:center; min-width:100px; }
+  .info-card .num { font-size:32px; font-weight:900; color:#c9a84c; }
+  .info-card .label { font-size:11px; color:var(--text-dim); letter-spacing:2px; margin-top:4px; }
+
+  .btn {
+    display:inline-block; padding:14px 48px; font-family:inherit; font-size:15px; letter-spacing:3px;
+    border:1px solid rgba(255,255,255,0.2); background:rgba(255,255,255,0.05);
+    color:#d4c8b8; cursor:pointer; transition:all 0.35s; text-transform:uppercase;
+  }
+  .btn:hover { background:rgba(255,255,255,0.1); border-color:rgba(255,255,255,0.35); box-shadow:0 0 30px rgba(255,255,255,0.05); }
+  .btn.primary { border-color:var(--motorics); box-shadow:0 0 24px var(--motorics-glow); }
+
+  /* ── Quiz Screen ── */
+  .quiz-header { margin-bottom:24px; }
+  .progress-bar { width:100%; height:3px; background:var(--border); margin-bottom:10px; border-radius:2px; }
+  .progress-fill { height:100%; background:linear-gradient(90deg, var(--intellect), var(--psyche), var(--physique), var(--motorics));
+    border-radius:2px; transition:width 0.4s; }
+  .progress-info { display:flex; justify-content:space-between; font-size:12px; color:var(--text-dim); letter-spacing:1px; }
+  .skill-tag { display:inline-block; padding:3px 10px; font-size:11px; letter-spacing:2px; margin-bottom:20px; border:1px solid var(--border); color:var(--text-dim); }
+  .question-text { font-size:20px; line-height:1.7; margin-bottom:28px; font-weight:600; letter-spacing:0.5px; }
+  .options { display:flex; flex-direction:column; gap:10px; }
+  .option {
+    display:flex; align-items:center; gap:14px; padding:16px 20px;
+    background:var(--card-bg); border:1px solid var(--border);
+    cursor:pointer; transition:all 0.3s; text-align:left; font-family:inherit; color:var(--text); font-size:15px; line-height:1.5;
+  }
+  .option:hover { border-color:rgba(255,255,255,0.2); background:rgba(255,255,255,0.03); }
+  .option.selected { border-color:rgba(255,255,255,0.35); background:rgba(255,255,255,0.06); }
+  .option-letter { width:32px; height:32px; border-radius:50%; border:1px solid var(--border); display:flex; align-items:center; justify-content:center; font-size:13px; font-weight:700; flex-shrink:0; transition:all 0.3s; }
+  .option.selected .option-letter { border-color:#c9a84c; background:rgba(201,168,76,0.15); color:#c9a84c; }
+  .option.intellect.selected { border-color:var(--intellect); }
+  .option.intellect.selected .option-letter { border-color:var(--intellect); background:rgba(74,144,196,0.15); color:var(--intellect); }
+  .option.psyche.selected { border-color:var(--psyche); }
+  .option.psyche.selected .option-letter { border-color:var(--psyche); background:rgba(139,95,192,0.15); color:var(--psyche); }
+  .option.physique.selected { border-color:var(--physique); }
+  .option.physique.selected .option-letter { border-color:var(--physique); background:rgba(201,74,58,0.15); color:var(--physique); }
+  .option.motorics.selected { border-color:var(--motorics); }
+  .option.motorics.selected .option-letter { border-color:var(--motorics); background:rgba(201,168,76,0.15); color:var(--motorics); }
+
+  .quiz-nav { display:flex; justify-content:space-between; margin-top:28px; }
+  .btn-sm { padding:8px 20px; font-size:12px; letter-spacing:2px; }
+
+  /* ── Results Screen ── */
+  .results { text-align:center; }
+  .result-header { margin-bottom:36px; }
+  .result-header .subtitle { font-size:12px; letter-spacing:5px; color:var(--text-dim); margin-bottom:8px; }
+  .result-header h2 { font-size:28px; font-weight:700; margin-bottom:6px; }
+  .archetype-name { font-size:42px; font-weight:900; letter-spacing:4px;
+    background: linear-gradient(180deg, #efe4d0 0%, #9a8a6a 100%);
+    -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; }
+  .archetype-en { font-size:13px; color:var(--text-dim); letter-spacing:3px; margin-top:4px; }
+  .archetype-diagnosis { font-style:italic; color:#b0a090; font-size:15px; line-height:1.9; max-width:560px; margin:20px auto 0; }
+
+  /* Attribute bars */
+  .attr-bars { display:flex; flex-direction:column; gap:10px; max-width:500px; margin:0 auto 32px; }
+  .attr-bar-row { display:flex; align-items:center; gap:12px; }
+  .attr-bar-label { width:50px; font-size:13px; letter-spacing:1px; text-align:right; flex-shrink:0; }
+  .attr-bar-track { flex:1; height:8px; background:var(--border); border-radius:4px; overflow:hidden; }
+  .attr-bar-fill { height:100%; border-radius:4px; transition:width 0.8s ease; }
+  .attr-bar-fill.intellect { background:var(--intellect); box-shadow:0 0 8px var(--intellect-glow); }
+  .attr-bar-fill.psyche { background:var(--psyche); box-shadow:0 0 8px var(--psyche-glow); }
+  .attr-bar-fill.physique { background:var(--physique); box-shadow:0 0 8px var(--physique-glow); }
+  .attr-bar-fill.motorics { background:var(--motorics); box-shadow:0 0 8px var(--motorics-glow); }
+  .attr-bar-val { width:32px; font-size:12px; text-align:left; color:var(--text-dim); }
+
+  /* Top skills */
+  .top-skills { display:flex; gap:16px; justify-content:center; flex-wrap:wrap; margin-bottom:36px; }
+  .top-skill-card { background:var(--card-bg); border:1px solid var(--border); padding:16px; width:140px; text-align:center; transition:all 0.35s; }
+  .top-skill-card:hover { transform:translateY(-3px); }
+  .top-skill-card.intellect:hover { border-color:var(--intellect); box-shadow:0 6px 20px var(--intellect-glow); }
+  .top-skill-card.psyche:hover { border-color:var(--psyche); box-shadow:0 6px 20px var(--psyche-glow); }
+  .top-skill-card.physique:hover { border-color:var(--physique); box-shadow:0 6px 20px var(--physique-glow); }
+  .top-skill-card.motorics:hover { border-color:var(--motorics); box-shadow:0 6px 20px var(--motorics-glow); }
+  .top-skill-card .portrait { width:80px; height:100px; margin:0 auto 10px; overflow:hidden; }
+  .top-skill-card .portrait img { width:100%; height:100%; object-fit:cover; }
+  .top-skill-card .skill-name { font-size:14px; font-weight:700; letter-spacing:1px; }
+  .top-skill-card .skill-en { font-size:9px; color:var(--text-dim); letter-spacing:1px; margin-top:2px; }
+  .top-skill-card .skill-voice { font-size:11px; color:#9a8a6a; font-style:italic; margin-top:8px; line-height:1.5; }
+
+  .result-actions { display:flex; gap:14px; justify-content:center; flex-wrap:wrap; margin-top:32px; }
+
+  /* Thought bubble */
+  .thought-bubble { max-width:560px; margin:0 auto 32px; padding:20px 24px; background:rgba(255,255,255,0.03); border:1px solid var(--border); text-align:left; }
+  .thought-bubble .tb-label { font-size:10px; letter-spacing:4px; color:var(--text-dim); margin-bottom:10px; text-transform:uppercase; }
+  .thought-bubble .tb-text { font-size:14px; line-height:1.9; color:#b0a090; font-style:italic; }
+
+  @media (max-width:600px) {
+    .container { padding:16px 10px; }
+    .question-text { font-size:17px; }
+    .option { padding:12px 14px; font-size:13px; }
+    .archetype-name { font-size:30px; }
+    .top-skill-card { width:120px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="bg-noise"></div><div class="bg-art"></div>
+<div class="paint-blob b1"></div><div class="paint-blob b2"></div><div class="paint-blob b3"></div><div class="paint-blob b4"></div>
+
+<div class="container">
+
+  <!-- ═══════════ START SCREEN ═══════════ -->
+  <div class="screen active" id="screen-start">
+    <div class="start-content">
+      <div class="subtitle">Disco Elysium · Inner Voices Test</div>
+      <h1>你脑海里<br>最吵的声音是哪个？</h1>
+      <p class="tagline">
+        24道情景题，探索你精神世界中那24个争吵的声音。<br>
+        找出谁在你的脑海里拥有最大的话语权。
+      </p>
+      <div class="info-cards">
+        <div class="info-card"><div class="num">24</div><div class="label">道情景题</div></div>
+        <div class="info-card"><div class="num">4</div><div class="label">大属性</div></div>
+        <div class="info-card"><div class="num">16</div><div class="label">种人格原型</div></div>
+        <div class="info-card"><div class="num">~5</div><div class="label">分钟完成</div></div>
+      </div>
+      <button class="btn primary" onclick="startQuiz()">开 始 测 试</button>
+    </div>
+  </div>
+
+  <!-- ═══════════ QUIZ SCREEN ═══════════ -->
+  <div class="screen" id="screen-quiz">
+    <div class="quiz-header">
+      <div class="progress-bar"><div class="progress-fill" id="progress-fill" style="width:0%"></div></div>
+      <div class="progress-info"><span id="progress-text">1 / 24</span><span id="attr-hint"></span></div>
+    </div>
+    <div class="skill-tag" id="skill-tag"></div>
+    <div class="question-text" id="question-text"></div>
+    <div class="options" id="options-container"></div>
+    <div class="quiz-nav">
+      <button class="btn btn-sm" id="btn-prev" onclick="prevQuestion()" style="visibility:hidden">← 上一题</button>
+      <button class="btn btn-sm primary" id="btn-next" onclick="nextQuestion()">下一题 →</button>
+    </div>
+  </div>
+
+  <!-- ═══════════ RESULTS SCREEN ═══════════ -->
+  <div class="screen" id="screen-results">
+    <div class="results">
+      <div class="result-header">
+        <div class="subtitle">YOUR DOMINANT VOICE</div>
+        <div class="archetype-name" id="result-archetype"></div>
+        <div class="archetype-en" id="result-archetype-en"></div>
+      </div>
+
+      <div class="attr-bars" id="result-bars"></div>
+
+      <div class="thought-bubble">
+        <div class="tb-label">● 思维内阁诊断书</div>
+        <div class="tb-text" id="result-diagnosis"></div>
+      </div>
+
+      <div class="top-skills" id="result-top-skills"></div>
+
+      <p class="archetype-diagnosis" id="result-description"></p>
+
+      <div class="result-actions">
+        <button class="btn primary" onclick="restartQuiz()">再 测 一 次</button>
+        <button class="btn" onclick="window.open('disco-elysium-compendium.html','_blank')">查看完整图鉴</button>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+// ═══════════════════════════════════════
+//  DATA: Skills, Questions, Archetypes
+// ═══════════════════════════════════════
+
+const ATTRS = ['intellect','psyche','physique','motorics'];
+const ATTR_NAMES = { intellect:'智力', psyche:'精神', physique:'体格', motorics:'身手' };
+const ATTR_COLORS = { intellect:'#4a90c4', psyche:'#8b5fc0', physique:'#c94a3a', motorics:'#c9a84c' };
+
+// 24 skills with their attribute, Chinese name, English name, and a short voice quote
+const SKILLS = [
+  // Intellect
+  { id:'logic', attr:'intellect', cn:'逻辑思维', en:'Logic', voice:'"冷静。严谨。我是你脑中唯一清醒的声音。"' },
+  { id:'encyclopedia', attr:'intellect', cn:'博学多闻', en:'Encyclopedia', voice:'"让我告诉你关于香烟品牌的一切——与本案无关但很有趣。"' },
+  { id:'rhetoric', attr:'intellect', cn:'能说会道', en:'Rhetoric', voice:'"他们在撒谎。让我撕碎他们的逻辑——用最华丽的修辞。"' },
+  { id:'drama', attr:'intellect', cn:'故弄玄虚', en:'Drama', voice:'"陛下，世界是一座舞台。但别信我说的任何话！"' },
+  { id:'conceptualization', attr:'intellect', cn:'标新立异', en:'Conceptualization', voice:'"如果你不跳进活火山，苟活于世还有什么意思？"' },
+  { id:'visual_calculus', attr:'intellect', cn:'见微知著', en:'Visual Calculus', voice:'"子弹以17度角弹跳。凶手身高175-180。我重建了一切。"' },
+  // Psyche
+  { id:'volition', attr:'psyche', cn:'平心定气', en:'Volition', voice:'"别喝酒。别吸毒。别把枪管塞进嘴里。我是你最后的防线。"' },
+  { id:'inland_empire', attr:'psyche', cn:'内陆帝国', en:'Inland Empire', voice:'"嘘……你听到了吗？墙壁在说话。你的领带也在说话。"' },
+  { id:'empathy', attr:'psyche', cn:'通情达理', en:'Empathy', voice:'"她的悲伤有另一个人的名字。我替你感受这一切。"' },
+  { id:'authority', attr:'psyche', cn:'争强好胜', en:'Authority', voice:'"他们必须尊重你。如果不——那就让他们恐惧你。"' },
+  { id:'esprit_de_corps', attr:'psyche', cn:'同舟共济', en:'Esprit de Corps', voice:'"此刻，朱蒂特正在档案室翻看你的卷宗。她在担心你。"' },
+  { id:'suggestion', attr:'psyche', cn:'循循善诱', en:'Suggestion', voice:'"低声一点。让他们以为那是他们自己的想法。来，我教你……"' },
+  // Physique
+  { id:'endurance', attr:'physique', cn:'钢筋铁骨', en:'Endurance', voice:'"再来一拳。你的身体比你的意志更坚强。引擎永不熄火。"' },
+  { id:'pain_threshold', attr:'physique', cn:'坚忍不拔', en:'Pain Threshold', voice:'"疼吗？这不算什么。说实话——我有点享受这个。"' },
+  { id:'physical_instrument', attr:'physique', cn:'强身健体', en:'Physical Instrument', voice:'"讲什么道理——你有一身的肌肉！直接撞过去。"' },
+  { id:'electrochemistry', attr:'physique', cn:'食髓知味', en:'Electrochemistry', voice:'"再吸一口。看看那个人——你不想要吗？别对抗我，我总是赢。"' },
+  { id:'shivers', attr:'physique', cn:'天人感应', en:'Shivers', voice:'"风从马丁内斯湾吹来。这座城市很冷。它在对你低语……"' },
+  { id:'half_light', attr:'physique', cn:'疑神疑鬼', en:'Half Light', voice:'"那个人的眼神不对。跑！或者先下手为强。永远别放松。"' },
+  // Motorics
+  { id:'hand_eye_coordination', attr:'motorics', cn:'眼明手巧', en:'Hand/Eye Coordination', voice:'"瞄准。呼吸。扣扳机。你的手知道该怎么做。"' },
+  { id:'perception', attr:'motorics', cn:'五感发达', en:'Perception', voice:'"糖罐里有叠起来的小钞。他咽了一下口水——他在紧张。"' },
+  { id:'reaction_speed', attr:'motorics', cn:'反应速度', en:'Reaction Speed', voice:'"闪避！他的拳头快——但我的反射更快。身体先动，大脑跟上。"' },
+  { id:'savoir_faire', attr:'motorics', cn:'鬼祟玲珑', en:'Savoir Faire', voice:'"滑步。转身。没人看到你。你是瑞瓦肖最酷的混蛋。"' },
+  { id:'interfacing', attr:'motorics', cn:'能工巧匠', en:'Interfacing', voice:'"给我一把螺丝刀。比起人，我更喜欢和机器对话。"' },
+  { id:'composure', attr:'motorics', cn:'从容自若', en:'Composure', voice:'"他以为会激怒你。他看到一个扑克脸。还有，那外套确实很丑。"' },
+];
+
+// 24 Questions — each targets one skill, 4 options scored 1-4
+const QUESTIONS = [
+  // ── INTELLECT ──
+  { skill:'logic', text:'面对一个复杂问题，你的第一反应是？',
+    options:[
+      { text:'列出所有已知信息，画逻辑链条推导', score:4 },
+      { text:'先感受一下直觉怎么说，数据可以等', score:2 },
+      { text:'动手试试看，实践出真知', score:1 },
+      { text:'观察周围有没有类似案例可以参考', score:3 },
+    ]},
+  { skill:'encyclopedia', text:'朋友随口提到一个冷门话题，你会？',
+    options:[
+      { text:'立刻接过话头，滔滔不绝讲五分钟相关知识', score:4 },
+      { text:'虽然知道很多，但怕被嫌烦，挑重点说两句', score:3 },
+      { text:'静静听着，感兴趣但懒得插嘴', score:2 },
+      { text:'"哦"——然后继续吃你的饭', score:1 },
+    ]},
+  { skill:'rhetoric', text:'有人在网上发表了你强烈反对的观点，你倾向于？',
+    options:[
+      { text:'逐条拆解对方逻辑漏洞，写一篇长回复', score:4 },
+      { text:'用讽刺幽默让对方自取其辱', score:2 },
+      { text:'直接拉黑，不值得浪费时间', score:1 },
+      { text:'想想对方可能经历了什么才这么想，尝试理解', score:3 },
+    ]},
+  { skill:'drama', text:'你需要在一个重要场合表达一个你不完全认同的立场，你会？',
+    options:[
+      { text:'戴上人格面具，献出此生最精彩的一场表演', score:4 },
+      { text:'感到极度不适，尽量含糊其辞混过去', score:1 },
+      { text:'试图找到你认同的那部分，真诚地强调它', score:3 },
+      { text:'用肢体语言和沉默表达真正的态度', score:2 },
+    ]},
+  { skill:'conceptualization', text:'面对一面空白的墙，你最想做什么？',
+    options:[
+      { text:'把它变成一幅巨大的壁画——前卫、抽象、令人费解', score:4 },
+      { text:'挂一幅精心挑选的画，配上灯光和植物', score:3 },
+      { text:'装几块实用的置物架', score:1 },
+      { text:'不在乎它长什么样，反正你也不会盯着墙看', score:2 },
+    ]},
+  { skill:'visual_calculus', text:'你走进一个杂乱的房间，直觉告诉你这里发生过什么。你首先注意？',
+    options:[
+      { text:'物品的位置关系——杯子为什么在椅子下面？', score:4 },
+      { text:'房间里的气氛——空气中残存着什么情绪？', score:2 },
+      { text:'有没有危险物品或出口——安全第一', score:1 },
+      { text:'气味、温度、光线——所有感官细节同时涌入', score:3 },
+    ]},
+  // ── PSYCHE ──
+  { skill:'volition', text:'深夜你独自一人，一个危险的念头突然冒出来。你会？',
+    options:[
+      { text:'对自己说：不。你不是那种人。然后去做俯卧撑。', score:4 },
+      { text:'与那个念头对话——它想告诉你什么？', score:2 },
+      { text:'给自己倒一杯烈酒，让那个念头安静下来', score:1 },
+      { text:'打开手机分散注意力——任何能让你不想这件事的东西', score:3 },
+    ]},
+  { skill:'inland_empire', text:'你做了一个极其逼真的梦，醒来后？',
+    options:[
+      { text:'花一上午分析梦的隐喻——宇宙一定在告诉你什么', score:4 },
+      { text:'觉得很有趣，吃早饭时讲给身边的人听', score:3 },
+      { text:'查了查解梦网站，然后耸耸肩继续生活', score:2 },
+      { text:'梦就是梦，大脑在清理缓存，没什么意义', score:1 },
+    ]},
+  { skill:'empathy', text:'朋友向你倾诉一件伤心事，你的反应通常是？',
+    options:[
+      { text:'你感受到他们的痛苦像自己的——眼眶也开始湿润', score:4 },
+      { text:'安静倾听，在合适的时机递上纸巾', score:3 },
+      { text:'努力想出切实可行的解决方案', score:1 },
+      { text:'虽然理解但保持距离——你不能替所有人承受痛苦', score:2 },
+    ]},
+  { skill:'authority', text:'在团队中，有人公开质疑你的判断。你的反应？',
+    options:[
+      { text:'直视对方，用不容置疑的语气重申立场——让他知道谁在掌控', score:4 },
+      { text:'先听对方说完，冷静分析他有没有道理', score:3 },
+      { text:'感到受伤但掩饰过去，等私下再处理', score:2 },
+      { text:'回避正面冲突，让别人来调停', score:1 },
+    ]},
+  { skill:'esprit_de_corps', text:'你的同事/同学遇到麻烦了，你会？',
+    options:[
+      { text:'不用对方开口，你已经出现在他身边帮忙了', score:4 },
+      { text:'发消息询问情况，看需要什么', score:3 },
+      { text:'默默帮忙把其他事情处理好，不惊动任何人', score:2 },
+      { text:'等他来主动求助再出手——每个人都有自己的仗要打', score:1 },
+    ]},
+  { skill:'suggestion', text:'你需要说服一个固执的人改变主意，你的策略是？',
+    options:[
+      { text:'种下一颗种子，让他以为是自己的想法，几天后自然转变', score:4 },
+      { text:'收集充足的论据和案例，正面说服', score:3 },
+      { text:'找一个他信任的人去说——迂回战术', score:2 },
+      { text:'直接告诉他该怎么做，不想花时间绕弯', score:1 },
+    ]},
+  // ── PHYSIQUE ──
+  { skill:'endurance', text:'你已经连续工作了12个小时，身体在强烈抗议。你？',
+    options:[
+      { text:'咬紧牙关继续。这具身体比你以为的更强——别娇气', score:4 },
+      { text:'小睡20分钟，设置精确的闹钟', score:3 },
+      { text:'用咖啡因和意志力硬撑', score:2 },
+      { text:'明天再做。透支身体代价太大', score:1 },
+    ]},
+  { skill:'pain_threshold', text:'身体受伤（比如扭伤、割伤）时，你的典型反应是？',
+    options:[
+      { text:'几乎注意不到疼痛——甚至觉得有点意思', score:4 },
+      { text:'注意到了，但会继续做手头的事，不会表现出来', score:3 },
+      { text:'会处理伤口，但过程中可能在骂脏话', score:2 },
+      { text:'真的很疼——你会立刻去处理并寻求帮助', score:1 },
+    ]},
+  { skill:'physical_instrument', text:'遇到需要纯力量解决的事（搬重物、掰开卡住的东西），你？',
+    options:[
+      { text:'撸起袖子直接上手。身体知道怎么做——不用动脑', score:4 },
+      { text:'先找工具辅助——聪明人用杠杆，不是蛮力', score:2 },
+      { text:'评估一下自己能不能搞定，必要时叫帮手', score:3 },
+      { text:'尽量避免这种事情，你更擅长别的方式解决问题', score:1 },
+    ]},
+  { skill:'electrochemistry', text:'派对上有人递给你一种你从没试过的"好东西"，你的内心？',
+    options:[
+      { text:'一个充满魅惑的声音说：就一次。你不想知道那是什么感觉吗？', score:4 },
+      { text:'好奇但谨慎——观察周围人的反应再决定', score:2 },
+      { text:'礼貌拒绝，但可能会多喝两杯', score:3 },
+      { text:'断然拒绝。你知道自己很容易上瘾的体质', score:1 },
+    ]},
+  { skill:'shivers', text:'你独自走在深夜无人的街道上，突然汗毛竖起。你？',
+    options:[
+      { text:'停下来，闭上眼睛——这座城市正在对你说话', score:4 },
+      { text:'加快脚步，同时警觉地扫视周围', score:2 },
+      { text:'觉得有点冷，裹紧外套继续走', score:1 },
+      { text:'仔细感受——是风的方向变了，还是真的有什么？', score:3 },
+    ]},
+  { skill:'half_light', text:'在一个陌生的环境里，你的默认状态是？',
+    options:[
+      { text:'高度警觉，扫描每一个出口和可疑的人——危险无处不在', score:4 },
+      { text:'保持一定警惕，但不会让焦虑影响判断', score:3 },
+      { text:'相信直觉，真的不对劲时会知道的', score:2 },
+      { text:'放松——大多数人都很友善，不用想太多', score:1 },
+    ]},
+  // ── MOTORICS ──
+  { skill:'hand_eye_coordination', text:'需要完成一个精确的手部操作（比如穿针、接住掉落的东西），你？',
+    options:[
+      { text:'毫不费力——你的手总是知道该怎么做', score:4 },
+      { text:'集中注意力可以完成得很好', score:3 },
+      { text:'需要多试几次，手不太听使唤', score:2 },
+      { text:'能躲就躲——精细操作不是你的强项', score:1 },
+    ]},
+  { skill:'perception', text:'走进一个陌生房间，你首先注意到的是什么？',
+    options:[
+      { text:'细节——角落里的灰尘、墙上的钉子孔、花瓶里水的颜色', score:4 },
+      { text:'房间里的人——他们的表情和姿态', score:2 },
+      { text:'整体氛围——这个空间让你感觉怎样', score:3 },
+      { text:'功能性布局——座位在哪、灯开关在哪', score:1 },
+    ]},
+  { skill:'reaction_speed', text:'有人突然朝你扔了一个东西，你的反应是？',
+    options:[
+      { text:'身体自动躲开，大脑还没反应过来发生了什么', score:4 },
+      { text:'虽然躲开了，但有点狼狈', score:2 },
+      { text:'被砸中了——但你看到了全过程', score:3 },
+      { text:'完全没反应过来，砸中后才发现发生了什么', score:1 },
+    ]},
+  { skill:'savoir_faire', text:'在社交场合，你的行事风格更接近？',
+    options:[
+      { text:'滑入人群，优雅游走——每个人都在想"那个人是谁？"', score:4 },
+      { text:'自然而然融入，不刻意也不回避', score:3 },
+      { text:'找个角落待着，等有趣的人来找你', score:2 },
+      { text:'你更希望根本没人在看你', score:1 },
+    ]},
+  { skill:'interfacing', text:'一件电子产品出故障了，你的第一反应是？',
+    options:[
+      { text:'兴奋——终于有机会拆开看看里面了', score:4 },
+      { text:'搜索解决方案，按步骤排查', score:3 },
+      { text:'敲一敲看能不能好——不行就重启', score:2 },
+      { text:'直接找人帮忙——你是用户不是修理工', score:1 },
+    ]},
+  { skill:'composure', text:'有人当着你的面说了一句极其冒犯的话。你的反应？',
+    options:[
+      { text:'表情纹丝不动——你不会让他看到任何反应', score:4 },
+      { text:'微微一笑，礼貌回应让对方意识到自己的失礼', score:3 },
+      { text:'内心怒火翻腾但强压下去——不在公共场合失态', score:2 },
+      { text:'立刻回怼——这种话不能惯着', score:1 },
+    ]},
+];
+
+// Sub-dimensions: each = 2 skills combined
+const SUB_DIMS = [
+  { id:'I1', attr:'intellect', name:'分析推理', skills:['logic','visual_calculus'] },
+  { id:'I2', attr:'intellect', name:'知识创意', skills:['encyclopedia','conceptualization'] },
+  { id:'I3', attr:'intellect', name:'言辞博弈', skills:['rhetoric','drama'] },
+  { id:'P1', attr:'psyche', name:'意志直觉', skills:['volition','inland_empire'] },
+  { id:'P2', attr:'psyche', name:'人际影响', skills:['empathy','suggestion'] },
+  { id:'P3', attr:'psyche', name:'社会气场', skills:['authority','esprit_de_corps'] },
+  { id:'H1', attr:'physique', name:'肉体韧性', skills:['endurance','pain_threshold'] },
+  { id:'H2', attr:'physique', name:'原始驱力', skills:['electrochemistry','half_light'] },
+  { id:'H3', attr:'physique', name:'环境共鸣', skills:['physical_instrument','shivers'] },
+  { id:'M1', attr:'motorics', name:'感知觉察', skills:['perception','composure'] },
+  { id:'M2', attr:'motorics', name:'反应行动', skills:['reaction_speed','hand_eye_coordination'] },
+  { id:'M3', attr:'motorics', name:'灵巧隐匿', skills:['savoir_faire','interfacing'] },
+];
+
+// Archetypes — 16 personality prototypes with 12-dim template vectors
+// Vector order: I1,I2,I3, P1,P2,P3, H1,H2,H3, M1,M2,M3 (L=1,M=2,H=3)
+const ARCHETYPES = [
+  {
+    id:'the_thinker', name:'思想者', en:'The Thinker',
+    vector:[3,3,2, 2,1,1, 1,1,1, 2,1,1],
+    diagnosis:'你的智力技能异常活跃。逻辑思维和博学多闻主宰着你的精神世界——你是那个在所有人都惊慌失措时还在一笔一划画逻辑链的人。但请注意：过于信任理性可能会让你忽略那些不能用方程式表达的东西。比如，爱。或者愤怒。或者为什么你会在凌晨三点醒来，盯着天花板。',
+    desc:'你在智力的殿堂里如鱼得水。世界对你来说是一个巨大的谜题，而你恰好喜欢解谜。'
+  },
+  {
+    id:'the_sensitive', name:'通感者', en:'The Sensitive',
+    vector:[1,1,2, 3,3,2, 2,1,2, 2,1,1],
+    diagnosis:'你的精神属性异常发达。内陆帝国让你在梦境与现实之间穿梭，通情达理则让你几乎无法对任何人的痛苦视而不见。你是一台精密的情绪雷达——问题是，这台雷达没有"关闭"按钮。当整个世界的情感都在你的脑海里回荡，你还能听到自己的声音吗？',
+    desc:'你感受一切。别人的痛苦就是你的痛苦，城市的低语就是你的心跳。'
+  },
+  {
+    id:'the_physical', name:'野兽派', en:'The Beast',
+    vector:[1,1,1, 1,1,2, 3,3,3, 1,2,1],
+    diagnosis:'体格是你的绝对主场。食髓知味是你脑中最大的声音——它知道所有最好的毒品、最烈的酒、还有那个你一直在回避的自我毁灭按钮。你的身体是一台完美的生存机器，但你的精神……嗯，有时候身体的智慧不等于人生的智慧。',
+    desc:'你活在肉体里。你的本能比你的思考更快——有时快得让你的理智追不上。'
+  },
+  {
+    id:'the_investigator', name:'侦探', en:'The Investigator',
+    vector:[3,1,1, 1,1,1, 1,1,1, 3,1,2],
+    diagnosis:'见微知著和五感发达——这是你脑中轮班值守的两个声音。你走进一个房间，三秒内你就知道这里发生过什么。你注意到糖罐里的小钞、地板缝里的气味、嫌疑人吞咽口水的瞬间。但过分关注细节也有代价：有时候你看到了每一棵树，却错过了整片森林。',
+    desc:'没有什么能逃过你的眼睛。你天生就是来找线索的——即使有时候你忘了要找的是什么。'
+  },
+  {
+    id:'the_oracle', name:'先知', en:'The Oracle',
+    vector:[1,2,1, 3,1,1, 1,1,3, 1,1,1],
+    diagnosis:'内陆帝国和天人感应——你脑海中最超自然的两个声音勾结在了一起。你与领带对话，你倾听城市的低语，你在梦醒时分获得破案的灵感。别人觉得你很疯——但他们不懂，疯子和先知之间的距离，往往只差一次正确的预感。',
+    desc:'你看不见的东西比看得见的更真实。墙壁在说话，街道在低语——只有你听得见。'
+  },
+  {
+    id:'the_revolutionary', name:'革命者', en:'The Revolutionary',
+    vector:[1,1,3, 1,1,3, 2,2,1, 1,1,1],
+    diagnosis:'能说会道在你的左耳念叨共产主义宣言，争强好胜在你的右耳咆哮着"别让任何人小看你"。你是一台会走路的意识形态广播站。你说话时人们会听——不是因为你有道理，而是因为你说话的方式让人无法移开目光。注意：不是每一场革命都需要你。',
+    desc:'你天生就是来改变世界的。只是有时候不太确定该往哪个方向改。'
+  },
+  {
+    id:'the_puppet_master', name:'操盘手', en:'The Puppet Master',
+    vector:[1,1,3, 1,3,1, 1,1,1, 2,1,3],
+    diagnosis:'故弄玄虚教你撒谎，循循善诱教你操控，鬼祟玲珑教你隐形。你是一只看不见的手——优雅而致命。你能让任何人相信任何事，包括你自己。危险在于：当你太擅长扮演别人时，你可能会忘记自己原本是谁。',
+    desc:'你总知道别人想要什么——而且你知道怎么让他们以为那是他们自己的想法。'
+  },
+  {
+    id:'the_guardian', name:'守护者', en:'The Guardian',
+    vector:[1,2,1, 3,2,2, 1,1,1, 2,1,1],
+    diagnosis:'平心定气是哈里脑中唯一无条件的善意——而你拥有它。你是团队里那个稳如磐石的人。同舟共济让你与伙伴们心灵相通，通情达理让你理解每个人的脆弱。但守护者最大的危险是：你太忙着守护别人，忘了谁在守护你。',
+    desc:'你是所有人的定心丸。你守住了每一个人的士气——代价是你的沉默。'
+  },
+  {
+    id:'the_ascetic', name:'苦行僧', en:'The Ascetic',
+    vector:[2,1,1, 2,1,1, 3,1,1, 3,1,1],
+    diagnosis:'钢筋铁骨和坚忍不拔在你脑中组成了"忍辱负重委员会"。你能承受的打击远超常人——肉体和精神上的。从容自若则让你在风暴中心依然保持着那该死的扑克脸。别人觉得你坚强，但你知道：有时候麻木不是坚强，只是太累了。',
+    desc:'你扛住了所有东西。你的身体是一堵墙，你的脸上没有裂缝——至少表面上是。'
+  },
+  {
+    id:'the_street_king', name:'街头之王', en:'The Street King',
+    vector:[1,1,1, 1,1,2, 1,2,1, 1,3,3],
+    diagnosis:'反应速度和鬼祟玲珑是你最吵闹的两个声音。你在街头混大的——身体永远快过大脑，滑步永远快过对话。你是瑞瓦肖最酷的混蛋。但你最大的问题恰恰是：你"太酷"了。酷到无法向任何人求助，酷到在真正需要帮助时还保持沉默。',
+    desc:'你不需要计划——你只需要速度。你的身体知道该怎么做，虽然有时候你的大脑不这么认为。'
+  },
+  {
+    id:'the_disaster', name:'灾难', en:'The Disaster',
+    vector:[1,1,1, 1,1,1, 1,1,1, 1,1,1],
+    diagnosis:'所有24个声音都在你的脑海里尖叫——但没有一个在给出有用的建议。食髓知味说"再来一杯"，疑神疑鬼说"每个人都在针对你"，内陆帝国说"你的领带正在策划一场叛变"。你是一团行走的混乱。但嘿——混乱也是某种形式的自由。',
+    desc:'你的脑内议会已经解散。现在24个声音全都处于暴走状态。祝你好运。'
+  },
+  {
+    id:'the_perfect_cop', name:'模范警察', en:'The Perfect Cop',
+    vector:[3,3,3, 3,3,3, 3,3,3, 3,3,3],
+    diagnosis:'24个声音在你脑中组成了一支训练有素的管弦乐队，而你是指挥。金·曷城会为你脱下他的飞行员夹克以示敬意。你的每一个维度都达到了巅峰——逻辑与直觉并存，共情与权威同辉，身体与心灵共振。但记住：瑞瓦肖从不善待完美的人。你是光芒，也是靶子。',
+    desc:'你是41分局的传奇。每一个技能都在最高等级等候召唤——这极为罕见。'
+  },
+  {
+    id:'the_hedonist', name:'享乐主义者', en:'The Hedonist',
+    vector:[1,2,1, 1,2,1, 2,3,1, 1,2,2],
+    diagnosis:'食髓知味是你脑中绝对的主宰，循循善诱紧随其后——一个负责产生欲望，一个负责说服你实现它。你对快乐有着敏锐的嗅觉，对任何形式的"好东西"都来者不拒。你的生活是一场永不结束的派对。唯一的问题是：派对总有散场的时候。',
+    desc:'你相信人生苦短——必须及时行乐。你的化学引擎永远在加速，刹车是别人家的事。'
+  },
+  {
+    id:'the_nihilist', name:'虚无者', en:'The Nihilist',
+    vector:[1,2,1, 2,1,1, 1,1,2, 2,2,1],
+    diagnosis:'你脑中最安静的那些声音反而占据了主导——不是因为他们强大，而是因为其他声音都累了。标新立异偶尔冒出一句"这一切有什么意义？"，天人感应让你觉得这座城市和你一样空洞。你不是没有技能——你只是暂时找不到使用它们的理由。有时候，什么都不做也是一种宣言。',
+    desc:'你的技能面板是灰色的。不是因为它们不存在——而是因为你暂时不想点任何按钮。'
+  },
+  {
+    id:'the_diplomat', name:'外交官', en:'The Diplomat',
+    vector:[2,1,2, 1,3,2, 1,1,1, 3,1,1],
+    diagnosis:'从容自若让你在任何局面下都像一面镜子——光滑、平静、反射一切而不吸收任何东西。通情达理让你理解每个人的立场，循循善诱让你把所有人带到谈判桌前。你是调解冲突的天才——但有时候，你太擅长看到所有人的立场，以至于忘了自己也有立场。',
+    desc:'你能让两个不共戴天的人握手言和——但你自己的立场呢？你已经很久没问过自己了。'
+  },
+  {
+    id:'the_lone_wolf', name:'孤狼', en:'The Lone Wolf',
+    vector:[2,1,2, 1,1,3, 2,2,1, 1,2,2],
+    diagnosis:'争强好胜让你不容任何人俯视你，同舟共济在你身上几乎完全沉默——你不是不懂战友之情，你只是觉得独自行动更高效。钢筋铁骨让你能独自扛住一切。人们觉得你难以接近——这正是你想要的效果。但有时候，一个人扛着所有东西太久，身体会记住的。',
+    desc:'你不需要任何人。至少你是这么告诉自己的。你的灵魂是一个人，一把枪，一瓶威士忌。'
+  },
+];
+
+// ═══════════════ STATE ═══════════════
+let currentQuestion = 0;
+let answers = new Array(24).fill(null); // stores score 1-4 for each question
+
+// ═══════════════ START ═══════════════
+function startQuiz() {
+  currentQuestion = 0;
+  answers = new Array(24).fill(null);
+  showScreen('screen-quiz');
+  renderQuestion();
+}
+
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+// ═══════════════ QUIZ ═══════════════
+function renderQuestion() {
+  const q = QUESTIONS[currentQuestion];
+  const skill = SKILLS.find(s => s.id === q.skill);
+
+  document.getElementById('progress-fill').style.width = (currentQuestion / 24 * 100) + '%';
+  document.getElementById('progress-text').textContent = `${currentQuestion + 1} / 24`;
+  document.getElementById('attr-hint').textContent = ATTR_NAMES[skill.attr];
+  document.getElementById('skill-tag').textContent = skill.cn + ' · ' + skill.en;
+  document.getElementById('question-text').textContent = q.text;
+
+  const container = document.getElementById('options-container');
+  const letters = ['A','B','C','D'];
+  container.innerHTML = q.options.map((opt, i) => {
+    const attrClass = ['intellect','psyche','physique','motorics'][i]; // 4 options map to 4 attrs
+    const selected = answers[currentQuestion] === opt.score ? ' selected' : '';
+    return `
+      <div class="option ${attrClass}${selected}" onclick="selectAnswer(${opt.score}, this)" data-score="${opt.score}">
+        <div class="option-letter">${letters[i]}</div>
+        <span>${opt.text}</span>
+      </div>`;
+  }).join('');
+
+  // Nav buttons — only show prev, auto-advance on selection
+  document.getElementById('btn-prev').style.visibility = currentQuestion > 0 ? 'visible' : 'hidden';
+  document.getElementById('btn-next').style.display = 'none';
+}
+
+function selectAnswer(score, el) {
+  if (answers[currentQuestion] !== null) return; // prevent double-click
+  answers[currentQuestion] = score;
+  document.querySelectorAll('.option').forEach(o => o.classList.remove('selected'));
+  el.classList.add('selected');
+  // Auto-advance after a brief pause
+  setTimeout(() => {
+    if (currentQuestion < 23) {
+      currentQuestion++;
+      renderQuestion();
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    } else {
+      showResults();
+    }
+  }, 200);
+}
+
+function nextQuestion() {
+  if (answers[currentQuestion] === null) return;
+  if (currentQuestion < 23) {
+    currentQuestion++;
+    renderQuestion();
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  } else {
+    showResults();
+  }
+}
+
+function prevQuestion() {
+  if (currentQuestion > 0) {
+    currentQuestion--;
+    renderQuestion();
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+}
+
+// ═══════════════ RESULTS ═══════════════
+function showResults() {
+  // 1. Calculate skill scores
+  const skillScores = {};
+  QUESTIONS.forEach((q, i) => {
+    skillScores[q.skill] = answers[i];
+  });
+
+  // 2. Calculate sub-dimension scores
+  const subDimScores = {};
+  SUB_DIMS.forEach(sd => {
+    subDimScores[sd.id] = skillScores[sd.skills[0]] + skillScores[sd.skills[1]];
+  });
+
+  // 3. Compress to L/M/H (1/2/3)
+  const userVector = SUB_DIMS.map(sd => {
+    const raw = subDimScores[sd.id]; // range 2-8
+    if (raw <= 4) return 1;       // L
+    if (raw <= 6) return 2;       // M
+    return 3;                      // H
+  });
+
+  // 4. Calculate attribute scores (for display)
+  const attrScores = { intellect:0, psyche:0, physique:0, motorics:0 };
+  SKILLS.forEach(s => {
+    attrScores[s.attr] += skillScores[s.id];
+  });
+  const maxAttrScore = Math.max(...Object.values(attrScores));
+
+  // 5. Match archetype using Manhattan distance
+  let bestArchetype = null;
+  let bestDistance = Infinity;
+  ARCHETYPES.forEach(arch => {
+    let dist = 0;
+    for (let i = 0; i < 12; i++) {
+      dist += Math.abs(userVector[i] - arch.vector[i]);
+    }
+    if (dist < bestDistance) {
+      bestDistance = dist;
+      bestArchetype = arch;
+    }
+  });
+
+  // 6. Get top 3 skills — one from each of the top 3 attributes
+  const attrOrder = Object.entries(attrScores).sort((a,b) => b[1]-a[1]).map(e=>e[0]);
+  const top3 = attrOrder.slice(0,3).map(attr => {
+    const attrSkills = SKILLS.filter(s => s.attr === attr);
+    attrSkills.sort((a,b) => skillScores[b.id] - skillScores[a.id]);
+    return { ...attrSkills[0], score: skillScores[attrSkills[0].id] };
+  });
+
+  // ── Render ──
+  document.getElementById('result-archetype').textContent = bestArchetype.name;
+  document.getElementById('result-archetype-en').textContent = bestArchetype.en;
+  document.getElementById('result-diagnosis').textContent = bestArchetype.diagnosis;
+
+  // Attribute bars
+  const barOrder = ['intellect','psyche','physique','motorics'];
+  const barEmoji = { intellect:'🧠', psyche:'💜', physique:'💪', motorics:'👁️' };
+  document.getElementById('result-bars').innerHTML = barOrder.map(attr => {
+    const pct = Math.round(attrScores[attr] / 24 * 100);
+    const color = ATTR_COLORS[attr];
+    return `
+      <div class="attr-bar-row">
+        <div class="attr-bar-label">${barEmoji[attr]} ${ATTR_NAMES[attr]}</div>
+        <div class="attr-bar-track"><div class="attr-bar-fill ${attr}" style="width:${pct}%"></div></div>
+        <div class="attr-bar-val">${attrScores[attr]}</div>
+      </div>`;
+  }).join('');
+
+  // Top 3 skills
+  document.getElementById('result-top-skills').innerHTML = top3.map(s => `
+    <div class="top-skill-card ${s.attr}">
+      <div class="portrait"><img src="images/portraits/portrait_${s.id}.png" alt="" onerror="this.style.opacity='0.3'"></div>
+      <div class="skill-name">${s.cn}</div>
+      <div class="skill-en">${s.en}</div>
+      <div class="skill-voice">${s.voice}</div>
+    </div>
+  `).join('');
+
+  document.getElementById('result-description').textContent = bestArchetype.desc;
+
+  showScreen('screen-results');
+  // Delay bar animation
+  setTimeout(() => {
+    document.querySelectorAll('.attr-bar-fill').forEach(bar => {
+      bar.style.width = bar.style.width; // trigger reflow
+    });
+  }, 100);
+}
+
+function restartQuiz() {
+  currentQuestion = 0;
+  answers = new Array(24).fill(null);
+  showScreen('screen-start');
+}
+</script>
+
+</body>
+</html>

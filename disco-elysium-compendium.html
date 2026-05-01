@@ -1,0 +1,949 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>极乐迪斯科 · 24人格声音图鉴</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;600;700;900&family=Playfair+Display:wght@400;700;900&display=swap');
+
+  :root {
+    --intellect: #4a90c4;
+    --intellect-glow: rgba(74, 144, 196, 0.25);
+    --intellect-bg: rgba(30, 50, 70, 0.6);
+    --psyche: #8b5fc0;
+    --psyche-glow: rgba(139, 95, 192, 0.25);
+    --psyche-bg: rgba(40, 25, 55, 0.6);
+    --physique: #c94a3a;
+    --physique-glow: rgba(201, 74, 58, 0.25);
+    --physique-bg: rgba(55, 20, 15, 0.6);
+    --motorics: #c9a84c;
+    --motorics-glow: rgba(201, 168, 76, 0.25);
+    --motorics-bg: rgba(50, 40, 15, 0.6);
+    --bg: #1a1410;
+    --card-bg: rgba(28, 22, 17, 0.92);
+    --text: #d4c8b8;
+    --text-dim: #8a7e6e;
+    --border: #3a3028;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Noto Serif SC', 'Playfair Display', serif;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* ── Background layers ── */
+  .bg-layer {
+    position: fixed;
+    top: 0; left: 0; width: 100%; height: 100%;
+    pointer-events: none; z-index: 0;
+  }
+
+  /* Noise texture */
+  .bg-noise {
+    position: fixed;
+    top: 0; left: 0; width: 100%; height: 100%;
+    background: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+    pointer-events: none; z-index: 0;
+  }
+
+  /* Game art background — semi-transparent */
+  .bg-art {
+    position: fixed;
+    top: 0; left: 0; width: 100%; height: 100%;
+    background:
+      /* Whirling-in-Rags style warm interior glow */
+      radial-gradient(ellipse at 30% 60%, rgba(180, 120, 40, 0.12) 0%, transparent 60%),
+      /* Cold Revachol window light */
+      radial-gradient(ellipse at 75% 25%, rgba(100, 140, 180, 0.10) 0%, transparent 55%),
+      /* Deep shadow vignette */
+      radial-gradient(ellipse at 50% 50%, transparent 40%, rgba(10, 6, 2, 0.7) 100%),
+      /* Horizon line — pale grey sky */
+      linear-gradient(to bottom,
+        rgba(30, 28, 26, 0) 0%,
+        rgba(40, 35, 30, 0.3) 25%,
+        rgba(50, 40, 35, 0.5) 50%,
+        rgba(30, 22, 18, 0.6) 75%,
+        rgba(18, 12, 8, 0.8) 100%
+      );
+    pointer-events: none; z-index: 0;
+  }
+
+  /* Paint stroke blobs */
+  .paint-stroke {
+    position: fixed;
+    pointer-events: none;
+    z-index: 0;
+    opacity: 0.05;
+    filter: blur(60px);
+    border-radius: 40% 60% 55% 45%;
+  }
+  .paint-stroke.s1 { width: 700px; height: 350px; background: var(--intellect); top: -120px; left: -250px; transform: rotate(-12deg); }
+  .paint-stroke.s2 { width: 550px; height: 280px; background: var(--psyche); bottom: -100px; right: -180px; transform: rotate(18deg); }
+  .paint-stroke.s3 { width: 450px; height: 220px; background: var(--physique); top: 40%; left: -120px; transform: rotate(-25deg); }
+  .paint-stroke.s4 { width: 400px; height: 380px; background: var(--motorics); top: 15%; right: -140px; transform: rotate(40deg); }
+  /* Extra stroke for depth */
+  .paint-stroke.s5 { width: 300px; height: 200px; background: #6b5040; bottom: 30%; left: 40%; transform: rotate(-8deg); opacity: 0.03; }
+
+  .container {
+    position: relative;
+    z-index: 1;
+    max-width: 1440px;
+    margin: 0 auto;
+    padding: 40px 28px;
+  }
+
+  /* ── Header ── */
+  .header {
+    text-align: center;
+    padding: 70px 20px 50px;
+    position: relative;
+  }
+  .header::after {
+    content: '';
+    display: block;
+    width: 80px; height: 2px;
+    background: linear-gradient(90deg, transparent, var(--text-dim), transparent);
+    margin: 30px auto 0;
+  }
+  .header .subtitle {
+    font-size: 13px;
+    letter-spacing: 7px;
+    text-transform: uppercase;
+    color: var(--text-dim);
+    margin-bottom: 14px;
+  }
+  .header h1 {
+    font-size: clamp(38px, 6vw, 72px);
+    font-weight: 900;
+    background: linear-gradient(180deg, #efe4d0 0%, #b8a58a 40%, #6a5c48 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    line-height: 1.15;
+    letter-spacing: 4px;
+  }
+  .header .quote {
+    margin-top: 22px;
+    font-style: italic;
+    color: var(--text-dim);
+    font-size: 15px;
+    max-width: 620px;
+    margin-inline: auto;
+    line-height: 1.9;
+  }
+
+  /* ── Attribute tabs ── */
+  .tabs {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+    flex-wrap: wrap;
+    margin-bottom: 50px;
+    position: sticky;
+    top: 20px;
+    z-index: 10;
+    padding: 10px 0;
+  }
+  .tab {
+    padding: 10px 26px;
+    border: 1px solid rgba(255,255,255,0.1);
+    background: rgba(20, 16, 11, 0.88);
+    backdrop-filter: blur(16px);
+    color: var(--text-dim);
+    cursor: pointer;
+    font-family: inherit;
+    font-size: 13px;
+    letter-spacing: 3px;
+    transition: all 0.35s;
+    position: relative;
+    text-transform: uppercase;
+  }
+  .tab:hover { color: #ccc; border-color: rgba(255,255,255,0.2); }
+  .tab.active { color: #fff; }
+  .tab[data-attr="intellect"].active { border-color: var(--intellect); box-shadow: 0 0 24px var(--intellect-glow); background: rgba(74,144,196,0.08); }
+  .tab[data-attr="psyche"].active { border-color: var(--psyche); box-shadow: 0 0 24px var(--psyche-glow); background: rgba(139,95,192,0.08); }
+  .tab[data-attr="physique"].active { border-color: var(--physique); box-shadow: 0 0 24px var(--physique-glow); background: rgba(201,74,58,0.08); }
+  .tab[data-attr="motorics"].active { border-color: var(--motorics); box-shadow: 0 0 24px var(--motorics-glow); background: rgba(201,168,76,0.08); }
+  .tab[data-attr="all"].active { border-color: rgba(255,255,255,0.3); box-shadow: 0 0 20px rgba(255,255,255,0.06); background: rgba(255,255,255,0.04); }
+
+  /* ── Attribute section ── */
+  .attr-section { margin-bottom: 56px; }
+  .attr-header {
+    display: flex;
+    align-items: center;
+    gap: 18px;
+    margin-bottom: 32px;
+    padding-bottom: 18px;
+    border-bottom: 1px solid rgba(255,255,255,0.06);
+  }
+  .attr-icon {
+    width: 52px; height: 52px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 26px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+  .attr-icon.intellect { background: var(--intellect-glow); box-shadow: 0 0 30px var(--intellect-glow); }
+  .attr-icon.psyche { background: var(--psyche-glow); box-shadow: 0 0 30px var(--psyche-glow); }
+  .attr-icon.physique { background: var(--physique-glow); box-shadow: 0 0 30px var(--physique-glow); }
+  .attr-icon.motorics { background: var(--motorics-glow); box-shadow: 0 0 30px var(--motorics-glow); }
+  .attr-name { font-size: 26px; font-weight: 700; letter-spacing: 3px; }
+  .attr-desc { font-size: 13px; color: var(--text-dim); margin-top: 4px; }
+
+  /* ── Card grid ── */
+  .card-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(400px, 1fr));
+    gap: 22px;
+  }
+
+  /* ── Skill card ── */
+  .card {
+    background: var(--card-bg);
+    border: 1px solid rgba(255,255,255,0.07);
+    position: relative;
+    overflow: hidden;
+    transition: all 0.45s cubic-bezier(0.25, 0.8, 0.25, 1.2);
+    cursor: default;
+    display: flex;
+    gap: 0;
+  }
+  .card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0;
+    width: 4px; height: 100%;
+    z-index: 2;
+    transition: width 0.35s;
+  }
+  .card.intellect::before { background: var(--intellect); }
+  .card.psyche::before { background: var(--psyche); }
+  .card.physique::before { background: var(--physique); }
+  .card.motorics::before { background: var(--motorics); }
+
+  .card:hover {
+    transform: translateY(-5px);
+    border-color: rgba(255,255,255,0.15);
+  }
+  .card.intellect:hover { box-shadow: 0 10px 40px var(--intellect-glow); }
+  .card.psyche:hover { box-shadow: 0 10px 40px var(--psyche-glow); }
+  .card.physique:hover { box-shadow: 0 10px 40px var(--physique-glow); }
+  .card.motorics:hover { box-shadow: 0 10px 40px var(--motorics-glow); }
+  .card:hover::before { width: 7px; }
+
+  /* ── Portrait area ── */
+  .card-portrait {
+    width: 140px;
+    min-height: 100%;
+    flex-shrink: 0;
+    position: relative;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .card.intellect .card-portrait { background: linear-gradient(180deg, rgba(30,50,70,0.8), rgba(20,35,50,0.9)); }
+  .card.psyche .card-portrait { background: linear-gradient(180deg, rgba(40,25,55,0.8), rgba(30,15,40,0.9)); }
+  .card.physique .card-portrait { background: linear-gradient(180deg, rgba(55,20,15,0.8), rgba(40,12,8,0.9)); }
+  .card.motorics .card-portrait { background: linear-gradient(180deg, rgba(50,40,15,0.8), rgba(35,28,8,0.9)); }
+
+  /* Real image — set up for easy replacement */
+  .card-portrait img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    position: absolute;
+    top: 0; left: 0;
+    opacity: 0.85;
+    transition: opacity 0.4s, filter 0.4s;
+    filter: grayscale(0.6) contrast(1.1);
+    mix-blend-mode: normal;
+  }
+  .card:hover .card-portrait img {
+    opacity: 1;
+    filter: grayscale(0.2) contrast(1.15);
+  }
+
+  /* Abstract SVG portrait — shows when no real image */
+  .abstract-portrait {
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    opacity: 0.6;
+    transition: opacity 0.4s;
+  }
+  .card:hover .abstract-portrait { opacity: 0.85; }
+
+  /* No-image fallback styling */
+  .card-portrait .no-img-hint {
+    position: absolute;
+    bottom: 8px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 9px;
+    letter-spacing: 1px;
+    color: rgba(255,255,255,0.25);
+    z-index: 3;
+    text-align: center;
+    pointer-events: none;
+  }
+
+  /* ── Card body ── */
+  .card-body {
+    flex: 1;
+    padding: 24px 22px 20px;
+    position: relative;
+    z-index: 1;
+  }
+
+  .card-num {
+    position: absolute;
+    top: 8px; right: 14px;
+    font-size: 56px;
+    font-weight: 900;
+    opacity: 0.035;
+    font-family: 'Playfair Display', serif;
+    line-height: 1;
+    pointer-events: none;
+  }
+
+  .card-name {
+    font-size: 20px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    margin-bottom: 2px;
+  }
+  .card-en {
+    font-size: 10px;
+    color: var(--text-dim);
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    margin-bottom: 12px;
+  }
+
+  .card-desc {
+    font-size: 13px;
+    line-height: 1.75;
+    color: #b0a090;
+    margin-bottom: 14px;
+    font-style: italic;
+  }
+
+  /* Traits */
+  .traits { display: flex; flex-direction: column; gap: 7px; }
+  .trait {
+    font-size: 12px;
+    line-height: 1.55;
+    padding: 7px 0 7px 12px;
+    border-left: 2px solid rgba(255,255,255,0.08);
+  }
+  .trait.high { border-left-color: rgba(255,255,255,0.22); }
+  .trait.low { border-left-color: rgba(255,255,255,0.06); }
+  .trait-label {
+    font-size: 9px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    margin-bottom: 2px;
+    color: var(--text-dim);
+  }
+  .trait.high .trait-label { color: #a09080; }
+  .trait.low .trait-label { color: #605448; }
+
+  /* Tags */
+  .tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-top: 14px;
+  }
+  .tag {
+    display: inline-block;
+    padding: 3px 10px;
+    font-size: 10px;
+    letter-spacing: 1px;
+    border: 1px solid rgba(255,255,255,0.08);
+    color: var(--text-dim);
+  }
+  .card.intellect .tag { border-color: rgba(74,144,196,0.25); }
+  .card.psyche .tag { border-color: rgba(139,95,192,0.25); }
+  .card.physique .tag { border-color: rgba(201,74,58,0.25); }
+  .card.motorics .tag { border-color: rgba(201,168,76,0.25); }
+
+  /* ── Footer ── */
+  .footer {
+    text-align: center;
+    padding: 60px 20px 40px;
+    color: var(--text-dim);
+    font-size: 13px;
+    letter-spacing: 2px;
+    line-height: 2;
+  }
+  .footer .line { width: 50px; height: 1px; background: rgba(255,255,255,0.1); margin: 0 auto 24px; }
+
+  /* ── Responsive ── */
+  @media (max-width: 860px) {
+    .card { flex-direction: column; }
+    .card-portrait { width: 100%; height: 180px; min-height: auto; }
+    .card-grid { grid-template-columns: 1fr; }
+    .header h1 { font-size: 30px; }
+    .tab { padding: 8px 14px; font-size: 11px; letter-spacing: 1px; }
+    .container { padding: 16px 10px; }
+  }
+
+  /* Fade-in */
+  .card { opacity: 0; transform: translateY(24px); animation: cardIn 0.55s forwards; }
+  @keyframes cardIn { to { opacity: 1; transform: translateY(0); } }
+</style>
+</head>
+<body>
+
+<!-- Background layers -->
+<div class="bg-noise"></div>
+<div class="bg-art"></div>
+<div class="paint-stroke s1"></div>
+<div class="paint-stroke s2"></div>
+<div class="paint-stroke s3"></div>
+<div class="paint-stroke s4"></div>
+<div class="paint-stroke s5"></div>
+
+<div class="container">
+
+  <!-- Header -->
+  <header class="header">
+    <div class="subtitle">Disco Elysium · Grimoire of the Mind</div>
+    <h1>二十四种人格声音</h1>
+    <p class="quote">
+      "在你脑海深处，有24个声音在争吵、辩论、低语。<br>他们不是多重人格——他们就是你。只是，每一个都用不同的方式看世界。"
+    </p>
+  </header>
+
+  <!-- Tabs -->
+  <div class="tabs" id="tabs">
+    <button class="tab active" data-attr="all">全 部</button>
+    <button class="tab" data-attr="intellect">智力</button>
+    <button class="tab" data-attr="psyche">精神</button>
+    <button class="tab" data-attr="physique">体格</button>
+    <button class="tab" data-attr="motorics">身手</button>
+  </div>
+
+  <!-- ═══════════ INTELLECT ═══════════ -->
+  <section class="attr-section" data-attr="intellect">
+    <div class="attr-header">
+      <div class="attr-icon intellect">&#x1F9E0;</div>
+      <div>
+        <div class="attr-name" style="color:var(--intellect)">智力 · Intellect</div>
+        <div class="attr-desc">纯粹的脑力。逻辑与知识的殿堂。但过于聪明的人，往往看不清脚下的路。</div>
+      </div>
+    </div>
+    <div class="card-grid">
+
+      <!-- 01 Logic -->
+      <div class="card intellect" style="animation-delay:0.03s">
+        <div class="card-portrait">
+          <img src="images/portraits/portrait_logic.png" alt="" onerror="this.style.display='none'" />
+        </div>
+        <div class="card-body">
+          <div class="card-num">01</div>
+          <div class="card-name">逻辑思维</div>
+          <div class="card-en">Logic</div>
+          <div class="card-desc">"冷静。严谨。一丝不苟。我是你脑中唯一清醒的声音。"</div>
+          <div class="traits">
+            <div class="trait high"><div class="trait-label">▎过高时</div>最复杂的谜题迎刃而解。但你会变得骄傲自满，容易被奉承蒙蔽。</div>
+            <div class="trait low"><div class="trait-label">▎过低时</div>再简单的谜题也异常棘手。找到线索后也只能靠运气拼凑全局。</div>
+          </div>
+          <div class="tags"><span class="tag">纯粹理性</span><span class="tag">演绎推理</span><span class="tag">不容非理性</span></div>
+        </div>
+      </div>
+
+      <!-- 02 Encyclopedia -->
+      <div class="card intellect" style="animation-delay:0.06s">
+        <div class="card-portrait">
+          <img src="images/portraits/portrait_encyclopedia.png" alt="" onerror="this.style.display='none'" />
+        </div>
+        <div class="card-body">
+          <div class="card-num">02</div>
+          <div class="card-name">博学多闻</div>
+          <div class="card-en">Encyclopedia</div>
+          <div class="card-desc">"你知道吗？瑞瓦肖的香烟品牌可以追溯到革命之前。哦等等——这对破案有帮助吗？也许没有。"</div>
+          <div class="traits">
+            <div class="trait high"><div class="trait-label">▎过高时</div>令人应接不暇的知识轰炸——可能提供关键突破口，也可能用花边消息淹没你的思维。</div>
+            <div class="trait low"><div class="trait-label">▎过低时</div>背景知识一片空白。你不知道这座城市、这里的人、甚至不知道自己在哪。</div>
+          </div>
+          <div class="tags"><span class="tag">行走的维基</span><span class="tag">冷知识狂魔</span><span class="tag">分不清重点</span></div>
+        </div>
+      </div>
+
+      <!-- 03 Rhetoric -->
+      <div class="card intellect" style="animation-delay:0.09s">
+        <div class="card-portrait">
+          <img src="images/portraits/portrait_rhetoric.png" alt="" onerror="this.style.display='none'" />
+        </div>
+        <div class="card-body">
+          <div class="card-num">03</div>
+          <div class="card-name">能说会道</div>
+          <div class="card-en">Rhetoric</div>
+          <div class="card-desc">"他们在撒谎。他们全都在撒谎。让我来撕碎他们的逻辑——用最华丽的修辞。"</div>
+          <div class="traits">
+            <div class="trait high"><div class="trait-label">▎过高时</div>成为令人印象深刻的政治野兽，立场一成不变。察觉被操控时立刻变得好战。</div>
+            <div class="trait low"><div class="trait-label">▎过低时</div>难以驳倒任何论点。几乎无法指出证言中的逻辑漏洞。</div>
+          </div>
+          <div class="tags"><span class="tag">辩论狂</span><span class="tag">共产主义倾向</span><span class="tag">华丽修辞</span></div>
+        </div>
+      </div>
+
+      <!-- 04 Drama -->
+      <div class="card intellect" style="animation-delay:0.12s">
+        <div class="card-portrait">
+          <img src="images/portraits/portrait_drama.png" alt="" onerror="this.style.display='none'" />
+        </div>
+        <div class="card-body">
+          <div class="card-num">04</div>
+          <div class="card-name">故弄玄虚</div>
+          <div class="card-en">Drama</div>
+          <div class="card-desc">"陛下，世界是一座舞台。而您——您的主角光环正在闪闪发光。别信我说的任何话！"</div>
+          <div class="traits">
+            <div class="trait high"><div class="trait-label">▎过高时</div>歇斯底里、妄想的戏精。看破世界即舞台之人，亦明了真理仅是虚妄。</div>
+            <div class="trait low"><div class="trait-label">▎过低时</div>无法说谎，也无法辨别谎言。在社交的舞台上一丝不挂。</div>
+          </div>
+          <div class="tags"><span class="tag">戏精</span><span class="tag">测谎专家</span><span class="tag">莎士比亚附体</span></div>
+        </div>
+      </div>
+
+      <!-- 05 Conceptualization -->
+      <div class="card intellect" style="animation-delay:0.15s">
+        <div class="card-portrait">
+          <img src="images/portraits/portrait_conceptualization.png" alt="" onerror="this.style.display='none'" />
+        </div>
+        <div class="card-body">
+          <div class="card-num">05</div>
+          <div class="card-name">标新立异</div>
+          <div class="card-en">Conceptualization</div>
+          <div class="card-desc">"如果你不能跳进活火山里，苟活于世还有什么意思？让我们搞出点大手笔。"</div>
+          <div class="traits">
+            <div class="trait high"><div class="trait-label">▎过高时</div>搞出过大手笔——大得过分。变成一个装腔作势的"艺术家"。</div>
+            <div class="trait low"><div class="trait-label">▎过低时</div>无法理解艺术作品。在艺术面前愚钝不堪。</div>
+          </div>
+          <div class="tags"><span class="tag">创意天才</span><span class="tag">后现代</span><span class="tag">装腔作势</span></div>
+        </div>
+      </div>
+
+      <!-- 06 Visual Calculus -->
+      <div class="card intellect" style="animation-delay:0.18s">
+        <div class="card-portrait">
+          <img src="images/portraits/portrait_visual_calculus.png" alt="" onerror="this.style.display='none'" />
+        </div>
+        <div class="card-body">
+          <div class="card-num">06</div>
+          <div class="card-name">见微知著</div>
+          <div class="card-en">Visual Calculus</div>
+          <div class="card-desc">"子弹从17度角弹跳。凶手身高175-180。我已用心灵重建了整场犯罪。"</div>
+          <div class="traits">
+            <div class="trait high"><div class="trait-label">▎过高时</div>世界向你揭示奥秘——但你可能沉迷心灵透景画，察觉不到恶棍偷走了你的裤子。</div>
+            <div class="trait low"><div class="trait-label">▎过低时</div>"心眼失明"。线索在你眼前，你却视而不见。</div>
+          </div>
+          <div class="tags"><span class="tag">法医学家</span><span class="tag">3D犯罪重建</span><span class="tag">数学狂</span></div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ═══════════ PSYCHE ═══════════ -->
+  <section class="attr-section" data-attr="psyche">
+    <div class="attr-header">
+      <div class="attr-icon psyche">&#x1FA75;</div>
+      <div>
+        <div class="attr-name" style="color:var(--psyche)">精神 · Psyche</div>
+        <div class="attr-desc">情感的深海。敏锐、共情、操纵。感性的尽头，是疯狂还是救赎？</div>
+      </div>
+    </div>
+    <div class="card-grid">
+
+      <!-- 07 Volition -->
+      <div class="card psyche" style="animation-delay:0.03s">
+        <div class="card-portrait">
+          <img src="images/portraits/portrait_volition.png" alt="" onerror="this.style.display='none'" />
+        </div>
+        <div class="card-body">
+          <div class="card-num">07</div>
+          <div class="card-name">平心定气</div>
+          <div class="card-en">Volition</div>
+          <div class="card-desc">"别喝酒。别吸毒。别把枪管塞进嘴里。我是你最后的防线。"</div>
+          <div class="traits">
+            <div class="trait high"><div class="trait-label">▎过高时</div>强大的意志力让你在极端困境中保持斗志。但过高的道德标准会让你拒绝一切灰色地带。</div>
+            <div class="trait low"><div class="trait-label">▎过低时</div>精神崩溃的风险大增。在困难面前你永远第一个倒下。</div>
+          </div>
+          <div class="tags"><span class="tag">守护神</span><span class="tag">道德罗盘</span><span class="tag">唯一无条件者</span></div>
+        </div>
+      </div>
+
+      <!-- 08 Inland Empire -->
+      <div class="card psyche" style="animation-delay:0.06s">
+        <div class="card-portrait">
+          <img src="images/portraits/portrait_inland_empire.png" alt="" onerror="this.style.display='none'" />
+        </div>
+        <div class="card-body">
+          <div class="card-num">08</div>
+          <div class="card-name">内陆帝国</div>
+          <div class="card-en">Inland Empire</div>
+          <div class="card-desc">"嘘……你听到了吗？墙壁在说话。你的领带也在说话。而我？我只是你的预感。"</div>
+          <div class="traits">
+            <div class="trait high"><div class="trait-label">▎过高时</div>与衣物、环境对话，洞察不可见的一切。前提是你还没被扔进疯人院。</div>
+            <div class="trait low"><div class="trait-label">▎过低时</div>丧失想象力——甚至丧失个性。"那样的话，你还怎么塑造整个宇宙呢？"</div>
+          </div>
+          <div class="tags"><span class="tag">神经质梦想家</span><span class="tag">与领带对话</span><span class="tag">超自然直觉</span></div>
+        </div>
+      </div>
+
+      <!-- 09 Empathy -->
+      <div class="card psyche" style="animation-delay:0.09s">
+        <div class="card-portrait">
+          <img src="images/portraits/portrait_empathy.png" alt="" onerror="this.style.display='none'" />
+        </div>
+        <div class="card-body">
+          <div class="card-num">09</div>
+          <div class="card-name">通情达理</div>
+          <div class="card-en">Empathy</div>
+          <div class="card-desc">"我能感觉到——她的悲伤有另一个男人的名字。而那个微笑？那是失去一切之后的面具。"</div>
+          <div class="traits">
+            <div class="trait high"><div class="trait-label">▎过高时</div>彻底代入他者立场。为他人悲伤而哭泣。你会被全世界的痛苦淹没。</div>
+            <div class="trait low"><div class="trait-label">▎过低时</div>沦为一头笨拙的畜生。根本无法在不惹火对方的前提下进行对话。</div>
+          </div>
+          <div class="tags"><span class="tag">镜像神经元</span><span class="tag">情感雷达</span><span class="tag">使用率最高</span></div>
+        </div>
+      </div>
+
+      <!-- 10 Authority -->
+      <div class="card psyche" style="animation-delay:0.12s">
+        <div class="card-portrait">
+          <img src="images/portraits/portrait_authority.png" alt="" onerror="this.style.display='none'" />
+        </div>
+        <div class="card-body">
+          <div class="card-num">10</div>
+          <div class="card-name">争强好胜</div>
+          <div class="card-en">Authority</div>
+          <div class="card-desc">"他们必须尊重你。如果不——那就让他们恐惧你。我甚至让你脑中的众神也瑟瑟发抖。"</div>
+          <div class="traits">
+            <div class="trait high"><div class="trait-label">▎过高时</div>成为令人畏惧的存在。对"不尊重"异常敏感——一丁点怠慢就产生打断膝盖的冲动。</div>
+            <div class="trait low"><div class="trait-label">▎过低时</div>冲熊孩子大喊大叫，反被嘲笑到精神崩溃。</div>
+          </div>
+          <div class="tags"><span class="tag">支配者</span><span class="tag">心理战</span><span class="tag">法西斯倾向</span></div>
+        </div>
+      </div>
+
+      <!-- 11 Esprit de Corps -->
+      <div class="card psyche" style="animation-delay:0.15s">
+        <div class="card-portrait">
+          <img src="images/portraits/portrait_esprit_de_corps.png" alt="" onerror="this.style.display='none'" />
+        </div>
+        <div class="card-body">
+          <div class="card-num">11</div>
+          <div class="card-name">同舟共济</div>
+          <div class="card-en">Esprit de Corps</div>
+          <div class="card-desc">"此刻，41分局的档案室里，朱蒂特正在翻看你的旧案卷宗。她的嘴角微微上扬。"</div>
+          <div class="traits">
+            <div class="trait high"><div class="trait-label">▎过高时</div>成为警察队伍的核心。能理解搭档最微妙的信号，甘愿为同事挡子弹。</div>
+            <div class="trait low"><div class="trait-label">▎过低时</div>无法理解同事的谨慎意见——"这种意见也许能救你一命"。</div>
+          </div>
+          <div class="tags"><span class="tag">警魂</span><span class="tag">心灵感应</span><span class="tag">永远真实</span></div>
+        </div>
+      </div>
+
+      <!-- 12 Suggestion -->
+      <div class="card psyche" style="animation-delay:0.18s">
+        <div class="card-portrait">
+          <img src="images/portraits/portrait_suggestion.png" alt="" onerror="this.style.display='none'" />
+        </div>
+        <div class="card-body">
+          <div class="card-num">12</div>
+          <div class="card-name">循循善诱</div>
+          <div class="card-en">Suggestion</div>
+          <div class="card-desc">"别直接说。低声一点。让他们以为那是他们自己的想法。来，我教你……"</div>
+          <div class="traits">
+            <div class="trait high"><div class="trait-label">▎过高时</div>操纵对话走向，轻易套取关键信息。把话术变成了一门精致的艺术。</div>
+            <div class="trait low"><div class="trait-label">▎过低时</div>言语缺乏魅力和说服力。别人听到的只是噪音。</div>
+          </div>
+          <div class="tags"><span class="tag">魅惑者</span><span class="tag">傀儡师</span><span class="tag">话术催眠</span></div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ═══════════ PHYSIQUE ═══════════ -->
+  <section class="attr-section" data-attr="physique">
+    <div class="attr-header">
+      <div class="attr-icon physique">&#x1F4AA;</div>
+      <div>
+        <div class="attr-name" style="color:var(--physique)">体格 · Physique</div>
+        <div class="attr-desc">肉体的荒野。力量、本能、成瘾。你体内那个原始的野兽从不沉睡。</div>
+      </div>
+    </div>
+    <div class="card-grid">
+
+      <!-- 13 Endurance -->
+      <div class="card physique" style="animation-delay:0.03s">
+        <div class="card-portrait">
+          <img src="images/portraits/portrait_endurance.png" alt="" onerror="this.style.display='none'" />
+        </div>
+        <div class="card-body">
+          <div class="card-num">13</div>
+          <div class="card-name">钢筋铁骨</div>
+          <div class="card-en">Endurance</div>
+          <div class="card-desc">"再来一拳。再来。你的身体比你的意志更坚强。我的引擎永远不会熄火。"</div>
+          <div class="traits">
+            <div class="trait high"><div class="trait-label">▎过高时</div>头部承受数次重击仍屹立不倒。尽情藐视弱者——但"直觉判断"偶尔倾向法西斯。</div>
+            <div class="trait low"><div class="trait-label">▎过低时</div>身体脆弱不堪。"警察的肉体总要经受考验——若未能通过，结果就是以身殉职。"</div>
+          </div>
+          <div class="tags"><span class="tag">生存机器</span><span class="tag">永不停歇</span><span class="tag">决定生命值</span></div>
+        </div>
+      </div>
+
+      <!-- 14 Pain Threshold -->
+      <div class="card physique" style="animation-delay:0.06s">
+        <div class="card-portrait">
+          <img src="images/portraits/portrait_pain_threshold.png" alt="" onerror="this.style.display='none'" />
+        </div>
+        <div class="card-body">
+          <div class="card-num">14</div>
+          <div class="card-name">坚忍不拔</div>
+          <div class="card-en">Pain Threshold</div>
+          <div class="card-desc">"疼吗？这不算什么。他们还得再狠点才行。说实话——我有点享受这个。"</div>
+          <div class="traits">
+            <div class="trait high"><div class="trait-label">▎过高时</div>对疼痛几乎免疫。但你会变成自我毁灭型受虐狂——主动寻求痛苦。</div>
+            <div class="trait low"><div class="trait-label">▎过低时</div>一点小伤就让你寸步难行。一根针就能让你瘫倒在地。</div>
+          </div>
+          <div class="tags"><span class="tag">铁血硬汉</span><span class="tag">痛觉免疫</span><span class="tag">受虐狂倾向</span></div>
+        </div>
+      </div>
+
+      <!-- 15 Physical Instrument -->
+      <div class="card physique" style="animation-delay:0.09s">
+        <div class="card-portrait">
+          <img src="images/portraits/portrait_physical_instrument.png" alt="" onerror="this.style.display='none'" />
+        </div>
+        <div class="card-body">
+          <div class="card-num">15</div>
+          <div class="card-name">强身健体</div>
+          <div class="card-en">Physical Instrument</div>
+          <div class="card-desc">"用那扇门？直接撞过去。讲什么道理——你有一身的肌肉！别像个娘们似的。"</div>
+          <div class="traits">
+            <div class="trait high"><div class="trait-label">▎过高时</div>展现令人畏惧的肌肉威慑。但你是所有技能中最不敏感的一个——只用力量解决一切。</div>
+            <div class="trait low"><div class="trait-label">▎过低时</div>体力不足，面对需要蛮力的场景束手无策。</div>
+          </div>
+          <div class="tags"><span class="tag">肌肉教练</span><span class="tag">行动派</span><span class="tag">最不敏感</span></div>
+        </div>
+      </div>
+
+      <!-- 16 Electrochemistry -->
+      <div class="card physique" style="animation-delay:0.12s">
+        <div class="card-portrait">
+          <img src="images/portraits/portrait_electrochemistry.png" alt="" onerror="this.style.display='none'" />
+        </div>
+        <div class="card-body">
+          <div class="card-num">16</div>
+          <div class="card-name">食髓知味</div>
+          <div class="card-en">Electrochemistry</div>
+          <div class="card-desc">"再吸一口。看看那个女人——你不想要她吗？再来一杯威士忌。别对抗我——你知道我总是赢。"</div>
+          <div class="traits">
+            <div class="trait high"><div class="trait-label">▎过高时</div>沦为恣情纵欲之人——一个不思悔改的流氓。一手拿着思必得瓶子，一手拿着塑料吸管。</div>
+            <div class="trait low"><div class="trait-label">▎过低时</div>过于天真无邪而无法有效办案。"你会无法理解这座城市。"</div>
+          </div>
+          <div class="tags"><span class="tag">最危险的声音</span><span class="tag">毒品百科</span><span class="tag">派对狂魔</span></div>
+        </div>
+      </div>
+
+      <!-- 17 Shivers -->
+      <div class="card physique" style="animation-delay:0.15s">
+        <div class="card-portrait">
+          <img src="images/portraits/portrait_shivers.png" alt="" onerror="this.style.display='none'" />
+        </div>
+        <div class="card-body">
+          <div class="card-num">17</div>
+          <div class="card-name">天人感应</div>
+          <div class="card-en">Shivers</div>
+          <div class="card-desc">"风从马丁内斯湾吹来，穿过8号棚屋的破窗。这座城市很冷。它在对你低语——你听到了吗？"</div>
+          <div class="traits">
+            <div class="trait high"><div class="trait-label">▎过高时</div>在城市中疯疯癫癫。能听到瑞瓦肖每一块砖、每一阵风的话语。"倾听城市者，注定无视他人"。</div>
+            <div class="trait low"><div class="trait-label">▎过低时</div>听不到城市的话语。"如果你听不到的话，你还怎么拯救这座城市呢？"</div>
+          </div>
+          <div class="tags"><span class="tag">最超自然</span><span class="tag">城市之魂</span><span class="tag">隐藏叙事层</span></div>
+        </div>
+      </div>
+
+      <!-- 18 Half Light -->
+      <div class="card physique" style="animation-delay:0.18s">
+        <div class="card-portrait">
+          <img src="images/portraits/portrait_half_light.png" alt="" onerror="this.style.display='none'" />
+        </div>
+        <div class="card-body">
+          <div class="card-num">18</div>
+          <div class="card-name">疑神疑鬼</div>
+          <div class="card-en">Half Light</div>
+          <div class="card-desc">"那个人的眼神不对。这个角落藏着什么。跑！——或者先下手为强。永远不要放松警惕。"</div>
+          <div class="traits">
+            <div class="trait high"><div class="trait-label">▎过高时</div>对威胁异常敏感，能先发制人。但也可能将无害情境误判为致命威胁——活在永久恐惧中。</div>
+            <div class="trait low"><div class="trait-label">▎过低时</div>无法感知潜在危险。容易被人偷袭或欺骗。</div>
+          </div>
+          <div class="tags"><span class="tag">战斗或逃跑</span><span class="tag">爬虫脑</span><span class="tag">偏执狂</span></div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ═══════════ MOTORICS ═══════════ -->
+  <section class="attr-section" data-attr="motorics">
+    <div class="attr-header">
+      <div class="attr-icon motorics">&#x1F441;</div>
+      <div>
+        <div class="attr-name" style="color:var(--motorics)">身手 · Motorics</div>
+        <div class="attr-desc">感知与动作的领域。速度、精准、风度。你的身体比你的大脑更了解这个世界。</div>
+      </div>
+    </div>
+    <div class="card-grid">
+
+      <!-- 19 Hand/Eye Coordination -->
+      <div class="card motorics" style="animation-delay:0.03s">
+        <div class="card-portrait">
+          <img src="images/portraits/portrait_hand_eye_coordination.png" alt="" onerror="this.style.display='none'" />
+        </div>
+        <div class="card-body">
+          <div class="card-num">19</div>
+          <div class="card-name">眼明手巧</div>
+          <div class="card-en">Hand/Eye Coordination</div>
+          <div class="card-desc">"瞄准。呼吸。扣扳机。完美的弧线。你的手知道该怎么做——相信它。"</div>
+          <div class="traits">
+            <div class="trait high"><div class="trait-label">▎过高时</div>枪法精准，手眼完美。但会被驱使去扣动不该扣动的扳机——每个问题都像靶子。</div>
+            <div class="trait low"><div class="trait-label">▎过低时</div>笨手笨脚。接不住飞来的硬币——也接不住飞来的子弹。</div>
+          </div>
+          <div class="tags"><span class="tag">神枪手</span><span class="tag">冷静专业</span><span class="tag">使用率最低</span></div>
+        </div>
+      </div>
+
+      <!-- 20 Perception -->
+      <div class="card motorics" style="animation-delay:0.06s">
+        <div class="card-portrait">
+          <img src="images/portraits/portrait_perception.png" alt="" onerror="this.style.display='none'" />
+        </div>
+        <div class="card-body">
+          <div class="card-num">20</div>
+          <div class="card-name">五感发达</div>
+          <div class="card-en">Perception</div>
+          <div class="card-desc">"糖罐里有几张叠起来的小钞。地板缝隙散发出C级罪犯特有的气味。他咽了一下口水——他在紧张。"</div>
+          <div class="traits">
+            <div class="trait high"><div class="trait-label">▎过高时</div>捕捉物质世界的每一丝细节。但"只有世间最强悍的心灵才能承受这种密度的信息"。</div>
+            <div class="trait low"><div class="trait-label">▎过低时</div>错过一切。"你无法逮捕自己看不到、听不到、也嗅不到的东西。"</div>
+          </div>
+          <div class="tags"><span class="tag">侦探之眼</span><span class="tag">最强观察者</span><span class="tag">信息过载</span></div>
+        </div>
+      </div>
+
+      <!-- 21 Reaction Speed -->
+      <div class="card motorics" style="animation-delay:0.09s">
+        <div class="card-portrait">
+          <img src="images/portraits/portrait_reaction_speed.png" alt="" onerror="this.style.display='none'" />
+        </div>
+        <div class="card-body">
+          <div class="card-num">21</div>
+          <div class="card-name">反应速度</div>
+          <div class="card-en">Reaction Speed</div>
+          <div class="card-desc">"闪避！现在！他的拳头比你想象的快——但我的反射比你更快。身体先动，大脑跟上。"</div>
+          <div class="traits">
+            <div class="trait high"><div class="trait-label">▎过高时</div>反射神经异常发达——但身体赶在大脑之前行动，可能导致局势迅速恶化。</div>
+            <div class="trait low"><div class="trait-label">▎过低时</div>无法抢先开枪——"可能意味着永远失去开枪的机会"。慢一秒就是死。</div>
+          </div>
+          <div class="tags"><span class="tag">街头本能</span><span class="tag">闪避大师</span><span class="tag">弹珠机爱好者</span></div>
+        </div>
+      </div>
+
+      <!-- 22 Savoir Faire -->
+      <div class="card motorics" style="animation-delay:0.12s">
+        <div class="card-portrait">
+          <img src="images/portraits/portrait_savoir_faire.png" alt="" onerror="this.style.display='none'" />
+        </div>
+        <div class="card-body">
+          <div class="card-num">22</div>
+          <div class="card-name">鬼祟玲珑</div>
+          <div class="card-en">Savoir Faire</div>
+          <div class="card-desc">"滑步。转身。没有声音。没有人看到你。你现在是瑞瓦肖最酷的混蛋——而且他们永远不知道你来了。"</div>
+          <div class="traits">
+            <div class="trait high"><div class="trait-label">▎过高时</div>悄无声息地行动。但你会变成瑞瓦肖最骚包的装逼犯——风格永远大于实质。</div>
+            <div class="trait low"><div class="trait-label">▎过低时</div>笨拙。行动容易被发现。你永远做不到"酷"。</div>
+          </div>
+          <div class="tags"><span class="tag">酷王之王</span><span class="tag">隐形人</span><span class="tag">装逼犯</span></div>
+        </div>
+      </div>
+
+      <!-- 23 Interfacing -->
+      <div class="card motorics" style="animation-delay:0.15s">
+        <div class="card-portrait">
+          <img src="images/portraits/portrait_interfacing.png" alt="" onerror="this.style.display='none'" />
+        </div>
+        <div class="card-body">
+          <div class="card-num">23</div>
+          <div class="card-name">能工巧匠</div>
+          <div class="card-en">Interfacing</div>
+          <div class="card-desc">"给我一把螺丝刀。这个锁的结构很简单——只要这样转，然后……咔。比起人，我更喜欢和机器对话。"</div>
+          <div class="traits">
+            <div class="trait high"><div class="trait-label">▎过高时</div>精通万千机械，攻破重重封锁。但你会变得宁可跟机器说话也不理人。</div>
+            <div class="trait low"><div class="trait-label">▎过低时</div>面对机械装置束手无策。一扇锁住的门就是世界的尽头。</div>
+          </div>
+          <div class="tags"><span class="tag">机械通</span><span class="tag">撬锁大师</span><span class="tag">社恐技术宅</span></div>
+        </div>
+      </div>
+
+      <!-- 24 Composure -->
+      <div class="card motorics" style="animation-delay:0.18s">
+        <div class="card-portrait">
+          <img src="images/portraits/portrait_composure.png" alt="" onerror="this.style.display='none'" />
+        </div>
+        <div class="card-body">
+          <div class="card-num">24</div>
+          <div class="card-name">从容自若</div>
+          <div class="card-en">Composure</div>
+          <div class="card-desc">"他以为他会激怒你。他看到一个扑克脸。深吸一口气——保持腰杆挺直。还有，那件外套确实很丑。"</div>
+          <div class="traits">
+            <div class="trait high"><div class="trait-label">▎过高时</div>处变不惊，任何局面下保持冷静和尊严。但你也是时尚警察——会默默嘲笑每个人的穿搭。</div>
+            <div class="trait low"><div class="trait-label">▎过低时</div>情绪容易被挑动。在压力面前第一个崩溃。你的脸就是一本打开的书。</div>
+          </div>
+          <div class="tags"><span class="tag">扑克脸</span><span class="tag">时尚警察</span><span class="tag">外交官</span></div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="line"></div>
+    "每个人都有自己的方式来整理自己的思绪——你的方式，恰好是24个声音在脑海里争吵。"<br>
+    —— 金·曷城
+  </footer>
+
+</div>
+
+<!-- Filter Script -->
+<script>
+  const tabs = document.querySelectorAll('.tab');
+  const sections = document.querySelectorAll('.attr-section');
+  tabs.forEach(tab => {
+    tab.addEventListener('click', () => {
+      tabs.forEach(t => t.classList.remove('active'));
+      tab.classList.add('active');
+      const attr = tab.dataset.attr;
+      sections.forEach(section => {
+        section.style.display = (attr === 'all' || section.dataset.attr === attr) ? '' : 'none';
+      });
+    });
+  });
+</script>
+
+</body>
+</html>
