@@ -85,7 +85,7 @@
   }
   .option:hover { border-color:rgba(255,255,255,0.2); background:rgba(255,255,255,0.03); }
   .option.selected { border-color:rgba(255,255,255,0.35); background:rgba(255,255,255,0.06); }
-  .option-letter { width:36px; height:36px; min-width:36px; border-radius:50%; border:1px solid var(--border); display:flex; align-items:center; justify-content:center; font-size:14px; font-weight:700; flex-shrink:0; font-family:sans-serif; line-height:1; overflow:hidden; transition:all 0.3s; }
+  .option-letter { width:36px; height:36px; min-width:36px; border-radius:50%; border:1px solid var(--border); display:flex; align-items:center; justify-content:center; font-size:14px; font-weight:700; flex-shrink:0; font-family:Arial,sans-serif; line-height:1; overflow:hidden; position:relative; z-index:1; background:var(--card-bg); margin-right:14px; transition:all 0.3s; }
   .option.selected .option-letter { border-color:#c9a84c; background:rgba(201,168,76,0.15); color:#c9a84c; }
   .option.intellect.selected { border-color:var(--intellect); }
   .option.intellect.selected .option-letter { border-color:var(--intellect); background:rgba(74,144,196,0.15); color:var(--intellect); }
