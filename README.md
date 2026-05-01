@@ -1,7 +1,7 @@
 # 极乐迪斯科人格测评器
 
 仿照 SBTI（Silly Big Type Indicator）玩法，基于《极乐迪斯科》（Disco Elysium）24 种技能人格声音制作的娱乐向人格测评网站。
-
+https://boyang-web.github.io/disco-elysium-personality-test/
 ## 这是什么
 
 《极乐迪斯科》中，主角哈里·杜博阿的 24 项技能并非冰冷的数值，而是 24 个在你脑海中争吵、低语、给出建议的独立人格声音。每项技能都有自己独特的语气、偏好和偏见。
