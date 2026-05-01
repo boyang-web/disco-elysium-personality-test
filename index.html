@@ -602,13 +602,16 @@ function renderQuestion() {
   document.getElementById('btn-next').style.display = 'none';
 }
 
+let advancing = false;
+
 function selectAnswer(score, el) {
-  if (answers[currentQuestion] !== null) return; // prevent double-click
+  if (advancing) return; // timeout in progress
   answers[currentQuestion] = score;
   document.querySelectorAll('.option').forEach(o => o.classList.remove('selected'));
   el.classList.add('selected');
-  // Auto-advance after a brief pause
+  advancing = true;
   setTimeout(() => {
+    advancing = false;
     if (currentQuestion < 23) {
       currentQuestion++;
       renderQuestion();
